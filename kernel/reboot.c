@@ -46,7 +46,6 @@ int reboot_cpu;
 enum reboot_type reboot_type = BOOT_ACPI;
 int reboot_force;
 
-
 /*
  * If set, this is used for preparing the system to power off.
  */

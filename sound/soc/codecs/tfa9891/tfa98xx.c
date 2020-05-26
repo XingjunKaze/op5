@@ -152,6 +152,7 @@ static struct snd_kcontrol_new tfa98xx_at_controls[] = {
 		.put = tfa98xx_set_rivision_ctl,
 	},
 };
+
 static ssize_t tfa98xx_state_store(struct device *dev, struct device_attribute *attr,
 		const char *buf, size_t count)
 {

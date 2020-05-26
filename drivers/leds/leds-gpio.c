@@ -22,6 +22,7 @@
 #include <linux/slab.h>
 #include <linux/workqueue.h>
 #include <linux/regulator/consumer.h>
+
 struct gpio_led_data {
 	struct led_classdev cdev;
 	struct gpio_desc *gpiod;
@@ -100,6 +101,7 @@ static int create_gpio_led(const struct gpio_led *template,
 {
 	int ret, state;
 	const __be32 *min_uV, *max_uV;
+
 	led_dat->gpiod = template->gpiod;
 	if (!led_dat->gpiod) {
 		/*
@@ -286,10 +288,8 @@ static int gpio_led_probe(struct platform_device *pdev)
 					return ret;
 				}
 			}
-		 }
-	  }
-	}
-	else {
+		}
+	} else {
 		priv = gpio_leds_create(pdev);
 		if (IS_ERR(priv))
 			return PTR_ERR(priv);

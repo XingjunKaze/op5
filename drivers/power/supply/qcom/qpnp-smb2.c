@@ -1890,6 +1890,7 @@ static int smb2_init_hw(struct smb2 *chip)
 			"Couldn't configure VBUS for SW control rc=%d\n", rc);
 		return rc;
 	}
+
 	val = (ilog2(chip->dt.wd_bark_time / 16) << BARK_WDOG_TIMEOUT_SHIFT) &
 						BARK_WDOG_TIMEOUT_MASK;
 	val |= BITE_WDOG_TIMEOUT_8S;
@@ -2534,6 +2535,7 @@ static const struct file_operations proc_ship_mode_operations = {
 	.llseek		= noop_llseek,
 };
 #endif
+
 static int smb2_probe(struct platform_device *pdev)
 {
 	struct smb2 *chip;
@@ -2705,6 +2707,7 @@ static int smb2_probe(struct platform_device *pdev)
 		 &proc_ship_mode_operations))
 	pr_err("Failed to register proc interface\n");
 #endif
+
 	if (usb_present) {
 		schedule_delayed_work(&chg->non_standard_charger_check_work,
 		msecs_to_jiffies(TIME_1000MS));

@@ -1115,93 +1115,6 @@ static irqreturn_t qpnp_resin_bark_irq(int irq, void *_pon)
 err_exit:
 	return IRQ_HANDLED;
 }
-/*20151106,wujialong add for power dump capture*/
-static int qpnp_config_reset(struct qpnp_pon *pon, struct qpnp_pon_config *cfg);
-
-static unsigned int pwr_dump_enabled = -1;
-static unsigned int long_pwr_dump_enabled = -1;
-
-static int param_set_pwr_dump_enabled(const char *val, struct kernel_param *kp)
-{
-	unsigned long enable;
-	struct qpnp_pon *pon = sys_reset_dev;
-	struct qpnp_pon_config *cfg = NULL;
-	int rc;
-
-	if (!val || kstrtoul(val, 0, &enable) || enable > 1)
-		return -EINVAL;
-
-	cfg = qpnp_get_cfg(pon, 0); /*0 means pwr key */
-	if (!cfg)
-		return -EINVAL;
-	pr_info("pwr_dump_enabled = %d and request enable = %d\n",
-			pwr_dump_enabled, (unsigned int)enable);
-	if (pwr_dump_enabled != enable) {
-		cfg->s1_timer = 1352; /*reduce this time */
-		cfg->s2_type = 1;/*change s2 type to warm reset*/
-		rc = qpnp_config_reset(pon, cfg);
-
-		/*if we need enable this feature, */
-		/*we should disable wakeup capability */
-		if (enable)
-			disable_irq_wake(cfg->state_irq);
-		else
-			enable_irq_wake(cfg->state_irq);
-		pwr_dump_enabled = enable;
-	}
-	return 0;
-}
-
-static int param_set_long_press_pwr_dump_enabled
-(const char *val, struct kernel_param *kp)
-{
-	unsigned long enable;
-	struct qpnp_pon *pon = sys_reset_dev;
-	struct qpnp_pon_config *cfg = NULL;
-	int rc;
-	u32 s1_timer_bak;
-	u32 s2_type_bak;
-
-	if (!val || kstrtoul(val, 0, &enable) || enable > 1)
-		return -EINVAL;
-
-	cfg = qpnp_get_cfg(pon, PON_KPDPWR); /*0 means pwr key*/
-	if (!cfg)
-		return -EINVAL;
-
-	pr_info("long_pwr_dump_enabled = %d enable = %d s1_timer =%d\n",
-			long_pwr_dump_enabled,
-			(unsigned int)enable, cfg->s1_timer);
-
-	if (long_pwr_dump_enabled != enable) {
-
-		if (enable) {
-			s1_timer_bak = cfg->s1_timer;
-			s2_type_bak  = cfg->s2_type;
-
-			cfg->s1_timer = 1352; /*reduce this time */
-			cfg->s2_type = 1; /*change s2 type to warm reset*/
-
-			rc = qpnp_config_reset(pon, cfg);
-
-			cfg->s1_timer = s1_timer_bak;
-			cfg->s2_type  = s2_type_bak;
-
-		} else
-			rc = qpnp_config_reset(pon, cfg);
-		long_pwr_dump_enabled = enable;
-	}
-	return 0;
-}
-
-module_param_call(pwr_dump_enabled,
-param_set_pwr_dump_enabled, param_get_uint, &pwr_dump_enabled, 0644);
-
-module_param_call(long_pwr_dump_enabled,
-param_set_long_press_pwr_dump_enabled,
-param_get_uint, &long_pwr_dump_enabled, 0644);
-
-/*20151106,wujialong add for power dump capture*/
 
 static int qpnp_config_reset(struct qpnp_pon *pon, struct qpnp_pon_config *cfg);
 
@@ -2406,6 +2319,7 @@ static struct attribute_group pwr_on_off_attrs_group = {
 		.attrs = pwr_on_off_attrs,
 };
 static struct kobject *pwr_on_off_kobj;
+
 static int qpnp_pon_probe(struct platform_device *pdev)
 {
 	struct qpnp_pon *pon;
@@ -2422,6 +2336,7 @@ static int qpnp_pon_probe(struct platform_device *pdev)
 	unsigned long flags;
 	uint temp = 0;
 	int i, reg;
+
 	pon = devm_kzalloc(&pdev->dev, sizeof(struct qpnp_pon), GFP_KERNEL);
 	if (!pon)
 		return -ENOMEM;

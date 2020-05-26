@@ -954,13 +954,6 @@ static void __init log_buf_add_cpu(void)
 #else /* !CONFIG_SMP */
 static inline void log_buf_add_cpu(void) {}
 #endif /* CONFIG_SMP */
-static int __init ftm_console_silent_setup(char *str)
-{
-	pr_info("ftm_silent_log \n");
-	console_silent();
-	return 0;
-}
-early_param("ftm_console_silent", ftm_console_silent_setup);
 
 static int __init ftm_console_silent_setup(char *str)
 {

@@ -297,7 +297,6 @@ static void msm_restart_prepare(const char *cmd)
 
 	set_dload_mode(download_mode &&
 			(in_panic || restart_mode == RESTART_DLOAD));
-
 #endif
 
 	if (qpnp_pon_check_hard_reset_stored()) {
@@ -315,6 +314,7 @@ static void msm_restart_prepare(const char *cmd)
 		oem_panic_record = true;
 	}
 	qpnp_pon_set_restart_reason(0x00);
+
 	/* Hard reset the PMIC unless memory contents must be maintained. */
 	if (need_warm_reset || oem_panic_record) {
 		qpnp_pon_system_pwr_off(PON_POWER_OFF_WARM_RESET);

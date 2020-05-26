@@ -54,6 +54,7 @@ err:
 	gf_dev->gpio_state_disable = NULL;
 	return ret;
 }
+
 int gf_parse_dts(struct gf_dev* gf_dev)
 {
 	int rc = 0;

@@ -338,6 +338,7 @@ int devfreq_add_devbw(struct device *dev)
 		qos_request_value.min_devfreq = 0;
 		qos_request_value.max_devfreq = len;
 	}
+
 	return 0;
 }
 

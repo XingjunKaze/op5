@@ -38,11 +38,7 @@
 		pxlw,iris-disable-cm-c3d = <0x00>;
 		pxlw,iris-disable-cm-fleshtone = <0x00>;
 		pxlw,iris-disable-color-temp-en = <0x00>;
-<<<<<<< HEAD
-    pxlw,iris-disable-reading-mode = <0x00>;
-=======
 		pxlw,iris-disable-reading-mode = <0x00>;
->>>>>>> blu_origin/blu_spark-10
 		/*disable color adjust*/
 		pxlw,iris-disable-color-adjust = <0x32>;
 
@@ -111,7 +107,3 @@
 		pxlw,iris-sensor-auto-en-init = <0x00>;
 	};
 };
-<<<<<<< HEAD
-
-=======
->>>>>>> blu_origin/blu_spark-10

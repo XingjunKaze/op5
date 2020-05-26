@@ -206,7 +206,6 @@ static inline int __msm_dma_map_sg(struct device *dev, struct scatterlist *sg,
 		kref_init(&iommu_map->ref);
 		if (late_unmap)
 			kref_get(&iommu_map->ref);
-
 		iommu_map->meta = iommu_meta;
 		iommu_map->sgl.dma_address = sg->dma_address;
 		iommu_map->sgl.dma_length = sg->dma_length;

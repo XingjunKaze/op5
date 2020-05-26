@@ -328,6 +328,7 @@ static struct platform_driver msm_jpeg_driver = {
 static int __init msm_jpeg_driver_init(void)
 {
 	int rc;
+
 	rc = platform_driver_register(&msm_jpeg_driver);
 	return rc;
 }

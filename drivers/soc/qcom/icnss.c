@@ -48,8 +48,6 @@
 #include <soc/qcom/service-notifier.h>
 #include <soc/qcom/socinfo.h>
 #include <soc/qcom/ramdump.h>
-#include <linux/project_info.h>
-static u32 fw_version;
 
 #include "wlan_firmware_service_v01.h"
 #include <linux/project_info.h>
@@ -4665,24 +4663,6 @@ static int icnss_get_vbatt_info(struct icnss_priv *priv)
 
 	return 0;
 }
-
-/* Initial and show wlan firmware build version */
-void cnss_set_fw_version(u32 version) {
-        fw_version = version;
-}
-EXPORT_SYMBOL(cnss_set_fw_version);
-
-static ssize_t cnss_version_information_show(struct device *dev,
-                                struct device_attribute *attr, char *buf)
-{
-        if (!penv)
-                return -ENODEV;
-        return scnprintf(buf, PAGE_SIZE, "%u.%u.%u.%u\n", (fw_version & 0xf0000000) >> 28,
-        (fw_version & 0xf000000) >> 24, (fw_version & 0xf00000) >> 20, fw_version & 0x7fff);
-}
-
-static DEVICE_ATTR(cnss_version_information, 0444,
-                cnss_version_information_show, NULL);
 
 static int icnss_probe(struct platform_device *pdev)
 {

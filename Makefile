@@ -423,8 +423,6 @@ KBUILD_AFLAGS_MODULE  := -DMODULE
 KBUILD_CFLAGS_MODULE  := -DMODULE
 KBUILD_LDFLAGS_MODULE := -T $(srctree)/scripts/module-common.lds
 
-CFLAGS_KERNEL +=   -DJUST_FOR_BRINGUP
-
 # Read KERNELRELEASE from include/config/kernel.release (if it exists)
 KERNELRELEASE = $(shell cat include/config/kernel.release 2> /dev/null)
 KERNELVERSION = $(VERSION)$(if $(PATCHLEVEL),.$(PATCHLEVEL)$(if $(SUBLEVEL),.$(SUBLEVEL)))$(EXTRAVERSION)
@@ -666,9 +664,6 @@ KBUILD_CFLAGS	+= $(call cc-disable-warning, format-overflow)
 KBUILD_CFLAGS	+= $(call cc-disable-warning, int-in-bool-context)
 KBUILD_CFLAGS	+= $(call cc-disable-warning, address-of-packed-member)
 KBUILD_CFLAGS	+= $(call cc-disable-warning, attribute-alias)
-KBUILD_CFLAGS 	+= $(call cc-disable-warning,unused-variable)
-KBUILD_CFLAGS	+= $(call cc-disable-warning,array-bounds)
-KBUILD_CFLAGS	+= $(call cc-disable-warning,unused-function)
 
 ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
 KBUILD_CFLAGS	+= -Os
@@ -699,9 +694,9 @@ KBUILD_CFLAGS += $(call cc-option,-fno-reorder-blocks,) \
                  $(call cc-option,-fno-partial-inlining)
 endif
 
-# ifneq ($(CONFIG_FRAME_WARN),0)
-# KBUILD_CFLAGS += $(call cc-option,-Wframe-larger-than=${CONFIG_FRAME_WARN})
-# endif
+ifneq ($(CONFIG_FRAME_WARN),0)
+KBUILD_CFLAGS += $(call cc-option,-Wframe-larger-than=${CONFIG_FRAME_WARN})
+endif
 
 # Handle stack protector mode.
 #
@@ -776,10 +771,10 @@ else
 # select FRAME_POINTER.  However, FUNCTION_TRACER adds -pg, and this is
 # incompatible with -fomit-frame-pointer with current GCC, so we don't use
 # -fomit-frame-pointer with FUNCTION_TRACER.
-# ifndef CONFIG_FUNCTION_TRACER
+ifndef CONFIG_FUNCTION_TRACER
 KBUILD_CFLAGS	+= -fomit-frame-pointer
-# endif
-# endif
+endif
+endif
 
 KBUILD_CFLAGS   += $(call cc-option, -fno-var-tracking-assignments)
 
@@ -800,23 +795,23 @@ KBUILD_CFLAGS 	+= $(call cc-option, -femit-struct-debug-baseonly) \
 		   $(call cc-option,-fno-var-tracking)
 endif
 
-# ifdef CONFIG_FUNCTION_TRACER
-# ifndef CC_FLAGS_FTRACE
-# CC_FLAGS_FTRACE := -pg
-# endif
-# export CC_FLAGS_FTRACE
-# ifdef CONFIG_HAVE_FENTRY
-# CC_USING_FENTRY	:= $(call cc-option, -mfentry -DCC_USING_FENTRY)
-# endif
-# KBUILD_CFLAGS	+= $(CC_FLAGS_FTRACE) $(CC_USING_FENTRY)
-# KBUILD_AFLAGS	+= $(CC_USING_FENTRY)
-# ifdef CONFIG_DYNAMIC_FTRACE
-# 	ifdef CONFIG_HAVE_C_RECORDMCOUNT
-# 		BUILD_C_RECORDMCOUNT := y
-# 		export BUILD_C_RECORDMCOUNT
-# 	endif
-# endif
-# endif
+ifdef CONFIG_FUNCTION_TRACER
+ifndef CC_FLAGS_FTRACE
+CC_FLAGS_FTRACE := -pg
+endif
+export CC_FLAGS_FTRACE
+ifdef CONFIG_HAVE_FENTRY
+CC_USING_FENTRY	:= $(call cc-option, -mfentry -DCC_USING_FENTRY)
+endif
+KBUILD_CFLAGS	+= $(CC_FLAGS_FTRACE) $(CC_USING_FENTRY)
+KBUILD_AFLAGS	+= $(CC_USING_FENTRY)
+ifdef CONFIG_DYNAMIC_FTRACE
+	ifdef CONFIG_HAVE_C_RECORDMCOUNT
+		BUILD_C_RECORDMCOUNT := y
+		export BUILD_C_RECORDMCOUNT
+	endif
+endif
+endif
 
 # We trigger additional mismatches with less inlining
 ifdef CONFIG_DEBUG_SECTION_MISMATCH

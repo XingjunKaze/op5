@@ -102,6 +102,7 @@ config DLOAD_MODE_DEFAULT
 		due to a kernel panic. Note that this doesn't by itself
 		make the kernel reboot on a kernel panic - that must be
 		enabled via another mechanism.
+
 config QCOM_DLOAD_MODE
 	bool "Qualcomm download mode"
 	depends on POWER_RESET_QCOM

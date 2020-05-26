@@ -357,111 +357,6 @@ int convert_brightness (int brightness)
 	return brightness;
 }
 
-static u8	shutdown_enable = 0;
-
-#define LED_SPEED_MAX			20
-#define LED_SPEED_STOCK_MODE	0
-#define LED_SPEED_CONT_MODE		1
-#define LED_INTENSITY_MAX		100
-#define LED_INTENSITY_STOCK		0
-
-#define LED_CUSTOM_PAUSE_HI		1400
-#define LED_CUSTOM_PAUSE_LO		2000
-#define LED_CUSTOM_RAMP_STEP	90
-#define LED_CUSTOM_PWM_US		1000
-
-
-int led_enable_fade = 1;	// default is fading
-int led_intensity = 0;		// default is stock intensity
-int led_speed = 0;			// default is stock speed
-
-u32 convert_pause_hi_store (u32 value)
-{
-	pr_debug("Boeffla-LED: pause_hi orig = %d\n", value);
-
-	// calculate new pause time if speed is not set to stock
-	if (led_speed != LED_SPEED_STOCK_MODE)
-		value = LED_CUSTOM_PAUSE_HI / led_speed;
-
-	pr_debug("Boeffla-LED: pause_hi new = %d\n", value);
-	return value;
-}
-
-u32 convert_pause_lo_store (u32 value)
-{
-	pr_debug("Boeffla-LED: pause_lo orig = %d\n", value);
-
-	// calculate new pause time if speed is not set to stock
-	if (led_speed != LED_SPEED_STOCK_MODE)
-		value = LED_CUSTOM_PAUSE_LO / led_speed;
-
-	pr_debug("Boeffla-LED: pause_lo new = %d\n", value);
-	return value;
-}
-
-u32 convert_ramp_ms_store (u32 ramp_step_ms)
-{
-	pr_debug("Boeffla-LED: ramp_step_ms orig = %d\n", ramp_step_ms);
-
-	// no fading = disable ramp times
-	if (led_enable_fade == 0)
-		return 1;
-		
-	// speed is set to stock = take roms ramp times
-	if (led_speed == LED_SPEED_STOCK_MODE)
-		return ramp_step_ms;
-		
-	// calculate new ramp time
-	ramp_step_ms = LED_CUSTOM_RAMP_STEP / led_speed;
-
-	pr_debug("Boeffla-LED: ramp_step_ms new = %d\n", ramp_step_ms);
-	return ramp_step_ms;
-}
-
-u32 convert_pwm_us (u32 pwm_us)
-{
-	pr_debug("Boeffla-LED: pwm_us orig = %d\n", pwm_us);
-
-	// speed is set to stock = take roms ramp times
-	if (led_speed == LED_SPEED_STOCK_MODE)
-		return pwm_us;
-
-	// fix value for pwm us
-	pwm_us = LED_CUSTOM_PWM_US;
-
-	pr_debug("Boeffla-LED: pwm_us new = %d\n", pwm_us);
-	return pwm_us;
-}
-
-int check_for_notification_led(struct led_classdev *led_cdev)
-{
-	if ((strcmp(led_cdev->name, "red") == 0) ||
-		(strcmp(led_cdev->name, "green") == 0) ||
-		(strcmp(led_cdev->name, "blue") == 0))
-		return 1;
-
-	return 0;
-}
-
-int convert_brightness (int brightness)
-{
-	pr_debug("Boeffla-LED: brightness orig = %d\n", brightness);
-
-	// 0 value is stock
-	if (led_intensity == LED_INTENSITY_STOCK)
-		return brightness;
-
-	// 1 value is switch off in any case
-	if (led_intensity == 1)
-		return 0;
-	
-	// calculate dimmed value	
-	brightness = (brightness * led_intensity) / LED_INTENSITY_MAX;
-
-	pr_debug("Boeffla-LED: brightness new = %d\n", brightness);
-	return brightness;
-}
-
 /**
  * enum qpnp_leds - QPNP supported led ids
  * @QPNP_ID_WLED - White led backlight
@@ -2810,6 +2705,7 @@ static ssize_t duty_pcts_store(struct device *dev,
 		pwm_cfg->blinking = true;
 
 	buffer = (char *)buf;
+
 
 	rets= sscanf((const char *)buffer,
 		"bean %x %x %x %x %x %x %x %x %x %x %x ",

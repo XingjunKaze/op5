@@ -2151,6 +2151,7 @@ static struct platform_driver oem_force_serial_driver = {
 	.probe = oem_force_serial_probe,
 };
 module_platform_driver(oem_force_serial_driver);
+
 module_init(msm_serial_init);
 module_exit(msm_serial_exit);
 

@@ -910,9 +910,6 @@ static ssize_t wcd9xxx_print_name(struct switch_dev *sdev, char *buf)
 	return -EINVAL;
 }
 
-	}
-	return -EINVAL;
-}
 /*
  * wcd9335_get_codec_info: Get codec specific information
  *

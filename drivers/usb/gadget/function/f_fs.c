@@ -1246,6 +1246,7 @@ static ssize_t ffs_epfile_write_iter(struct kiocb *kiocb, struct iov_iter *from)
 	res = ffs_epfile_io(kiocb->ki_filp, p);
 	if (ffs_op_flg)
 		ffs_op_flg = false;
+
 	if (res == -EIOCBQUEUED)
 		return res;
 	if (p->aio)
@@ -1320,6 +1321,7 @@ static ssize_t ffs_epfile_read_iter(struct kiocb *kiocb, struct iov_iter *to)
 	res = ffs_epfile_io(kiocb->ki_filp, p);
 	if (ffs_op_flg)
 		ffs_op_flg = false;
+
 	if (res == -EIOCBQUEUED)
 		return res;
 
