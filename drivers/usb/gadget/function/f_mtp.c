@@ -110,7 +110,6 @@ enum buf_type {
 #define DRIVER_NAME "mtp"
 
 #define MAX_ITERATION		100
-/* values for qos requests */
 #define FILE_LENGTH	(10 * 1024 * 1024)
 #define PM_QOS_TIMEOUT	3000000
 
@@ -451,7 +450,6 @@ static inline struct mtp_dev *func_to_mtp(struct usb_function *f)
 {
 	return container_of(f, struct mtp_dev, function);
 }
-/*2016/12/09, Add fix memory for MTP*/
 static struct usb_request *mtp_request_new(struct usb_ep *ep,
 	int buffer_size, enum buf_type type)
 {
@@ -461,7 +459,6 @@ static struct usb_request *mtp_request_new(struct usb_ep *ep,
 		return NULL;
 
 	/* now allocate buffers for the requests */
-	/*2016/12/09, Add fix memory for MTP*/
 	if (useFixAddr == true) {
 		if (type == TX_BUFFER)
 			req->buf = __va(MTP_TX_BUFFER_BASE + mtpBufferOffset);
@@ -478,7 +475,6 @@ static struct usb_request *mtp_request_new(struct usb_ep *ep,
 		return NULL;
 	}
 
-	/*2016/12/09, Add fix memory for MTP*/
 	if (useFixAddr == true) {
 		if (buffer_size == INTR_BUFFER_SIZE)
 			mtpBufferOffset += 0x40; /*alignment*/
@@ -492,7 +488,6 @@ static struct usb_request *mtp_request_new(struct usb_ep *ep,
 static void mtp_request_free(struct usb_request *req, struct usb_ep *ep)
 {
 	if (req) {
-		/*2016/12/09, Add fix memory for MTP*/
 		if (useFixAddr == true) {
 			req->buf = NULL;
 			mtpBufferOffset = 0;
@@ -622,7 +617,6 @@ static int mtp_create_bulk_endpoints(struct mtp_dev *dev,
 	dev->ep_intr = ep;
 
 retry_tx_alloc:
-	/*2016/12/09, Add fix memory for MTP*/
 	if (mtp_tx_req_len == MTP_TX_BUFFER_INIT_SIZE
 		&& mtp_rx_req_len == MTP_RX_BUFFER_INIT_SIZE
 		&& mtp_tx_reqs == MTP_TX_REQ_MAX)
@@ -633,7 +627,6 @@ retry_tx_alloc:
 	mtpBufferOffset = 0;
 	/* now allocate requests for our endpoints */
 	for (i = 0; i < mtp_tx_reqs; i++) {
-		/*2016/12/09, Add fix memory for MTP*/
 		req = mtp_request_new(dev->ep_in, mtp_tx_req_len, TX_BUFFER);
 		if (!req) {
 			if (mtp_tx_req_len <= MTP_BULK_BUFFER_SIZE)
@@ -658,10 +651,8 @@ retry_tx_alloc:
 		mtp_rx_req_len = MTP_BULK_BUFFER_SIZE;
 
 retry_rx_alloc:
-	/*2016/12/09, Add fix memory for MTP*/
 	mtpBufferOffset = 0;
 	for (i = 0; i < RX_REQ_MAX; i++) {
-		/*2016/12/09, Add fix memory for MTP*/
 		req = mtp_request_new(dev->ep_out, mtp_rx_req_len, RX_BUFFER);
 		if (!req) {
 			if (mtp_rx_req_len <= MTP_BULK_BUFFER_SIZE)
@@ -674,10 +665,8 @@ retry_rx_alloc:
 		req->complete = mtp_complete_out;
 		dev->rx_req[i] = req;
 	}
-	/*2016/12/09, Add fix memory for MTP*/
 	mtpBufferOffset = 0;
 	for (i = 0; i < INTR_REQ_MAX; i++) {
-		/*2016/12/09, Add fix memory for MTP*/
 		req = mtp_request_new(dev->ep_intr,
 			INTR_BUFFER_SIZE, INTR_BUFFER);
 		if (!req)
@@ -685,7 +674,6 @@ retry_rx_alloc:
 		req->complete = mtp_complete_intr;
 		mtp_req_put(dev, &dev->intr_idle, req);
 	}
-	/*2016/12/09, Add fix memory for MTP*/
 	mtpBufferOffset = 0;
 
 	return 0;
@@ -909,6 +897,11 @@ static void send_file_work(struct work_struct *data)
 	offset = dev->xfer_file_offset;
 	count = dev->xfer_file_length;
 
+	if (count < 0) {
+		dev->xfer_result = -EINVAL;
+		return;
+	}
+
 	DBG(cdev, "send_file_work(%lld %lld)\n", offset, count);
 
 	if (dev->xfer_file_length >= FILE_LENGTH) {
@@ -968,9 +961,9 @@ static void send_file_work(struct work_struct *data)
 			/* prepend MTP data header */
 			header = (struct mtp_data_header *)req->buf;
 			/*
-                         * set file size with header according to
-                         * MTP Specification v1.0
-                         */
+			 * set file size with header according to
+			 * MTP Specification v1.0
+			 */
 			header->length = (count > MTP_MAX_FILE_SIZE) ?
 				MTP_MAX_FILE_SIZE : __cpu_to_le32(count);
 			header->type = __cpu_to_le16(2); /* data packet */
@@ -1043,6 +1036,11 @@ static void receive_file_work(struct work_struct *data)
 	filp = dev->xfer_file;
 	offset = dev->xfer_file_offset;
 	count = dev->xfer_file_length;
+
+	if (count < 0) {
+		dev->xfer_result = -EINVAL;
+		return;
+	}
 
 	DBG(cdev, "receive_file_work(%lld)\n", count);
 	if (!IS_ALIGNED(count, dev->ep_out->maxpacket))

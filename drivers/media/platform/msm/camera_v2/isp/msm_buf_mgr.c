@@ -26,7 +26,6 @@
 #include <media/v4l2-ioctl.h>
 #include <media/v4l2-device.h>
 #include <media/videobuf2-core.h>
-
 #include "msm.h"
 #include "msm_buf_mgr.h"
 #include "cam_smmu_api.h"

@@ -220,6 +220,8 @@
 #include <linux/usb/gadget.h>
 #include <linux/usb/composite.h>
 
+#include <linux/nospec.h>
+
 #include "configfs.h"
 
 
@@ -2554,7 +2556,6 @@ reset:
 				bh->outreq = NULL;
 			}
 		}
-
 		common->fsg = NULL;
 		wake_up(&common->fsg_wait);
 	}
@@ -2565,7 +2566,6 @@ reset:
 
 	common->fsg = new_fsg;
 	fsg = common->fsg;
-
 	/* Allocate the requests */
 	for (i = 0; i < common->fsg_num_buffers; ++i) {
 		struct fsg_buffhd	*bh = &common->buffhds[i];
@@ -2635,16 +2635,17 @@ static int fsg_set_alt(struct usb_function *f, unsigned intf, unsigned alt)
 		usb_endpoint_maxp(fsg->bulk_out->desc);
 	clear_bit(IGNORE_BULK_OUT, &fsg->atomic_bitflags);
 
+	pr_err("%s:\n", __func__);
 	raise_exception(fsg->common, FSG_STATE_CONFIG_CHANGE);
-
+	pr_err("%s: end\n", __func__);
 	return USB_GADGET_DELAYED_STATUS;
 
 reset_bulk_int:
-		usb_ep_disable(fsg->bulk_in);
-		fsg->bulk_in->driver_data = NULL;
-		fsg->bulk_in_enabled = 0;
+	usb_ep_disable(fsg->bulk_in);
+	fsg->bulk_in->driver_data = NULL;
+	fsg->bulk_in_enabled = 0;
 err_exit:
-		return rc;
+	return rc;
 }
 
 static void fsg_disable(struct usb_function *f)
@@ -3318,7 +3319,6 @@ void fsg_common_set_inquiry_string(struct fsg_common *common, const char *vn,
 		     ? "File-CD Gadget"
 		     : "File-Stor Gadget"),
 		 i);
-    /*Anderson@, 2016/09/21, CD-ROM and VID customized*/
 	snprintf(common->inquiry_string, sizeof(common->inquiry_string), "%s",
 			"OnePlus Device Driver");
 }
@@ -3614,6 +3614,7 @@ static struct config_group *fsg_lun_make(struct config_group *group,
 	fsg_opts = to_fsg_opts(&group->cg_item);
 	if (num >= FSG_MAX_LUNS)
 		return ERR_PTR(-ERANGE);
+	num = array_index_nospec(num, FSG_MAX_LUNS);
 
 	mutex_lock(&fsg_opts->lock);
 	if (fsg_opts->refcnt || fsg_opts->common->luns[num]) {

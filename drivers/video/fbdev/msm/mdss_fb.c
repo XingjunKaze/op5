@@ -1,7 +1,7 @@
 /*
  * Core MDSS framebuffer driver.
  *
- * Copyright (c) 2008-2017, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2008-2019, The Linux Foundation. All rights reserved.
  * Copyright (C) 2007 Google Incorporated
  *
  * This software is licensed under the terms of the GNU General Public
@@ -320,7 +320,6 @@ static void mdss_fb_set_bl_brightness(struct led_classdev *led_cdev,
 	// Boeffla: apply min limits for LCD backlight (0 is exception for display off)
 	if (value != 0 && value < backlight_min)
 		value = backlight_min;
-		
 	/* This maps android backlight level 0 to 255 into
 	   driver backlight level 0 to bl_max with rounding */
 	MDSS_BRIGHT_TO_BL(bl_lvl, value, mfd->panel_info->bl_max,
@@ -648,7 +647,7 @@ static ssize_t mdss_fb_get_panel_info(struct device *dev,
 			"red_chromaticity_x=%d\nred_chromaticity_y=%d\n"
 			"green_chromaticity_x=%d\ngreen_chromaticity_y=%d\n"
 			"blue_chromaticity_x=%d\nblue_chromaticity_y=%d\n"
-			"panel_orientation=%d\n",
+			"panel_orientation=%d\ndyn_bitclk_en=%d\n",
 			pinfo->partial_update_enabled,
 			pinfo->roi_alignment.xstart_pix_align,
 			pinfo->roi_alignment.width_pix_align,
@@ -674,7 +673,7 @@ static ssize_t mdss_fb_get_panel_info(struct device *dev,
 			pinfo->hdr_properties.display_primaries[5],
 			pinfo->hdr_properties.display_primaries[6],
 			pinfo->hdr_properties.display_primaries[7],
-			pinfo->panel_orientation);
+			pinfo->panel_orientation, pinfo->dynamic_bitclk);
 
 	return ret;
 }
@@ -934,7 +933,9 @@ static ssize_t mdss_fb_get_hbm_mode(struct device *dev,
 
 	level = mdss_fb_send_panel_event(mfd, MDSS_EVENT_PANEL_GET_HBM_MODE,
 			NULL);
-	ret = scnprintf(buf, PAGE_SIZE, "%d\n", level);
+	ret = scnprintf(buf, PAGE_SIZE, "HBM mode = %d\n"
+	                                        "0-->HBM OFF\n"
+					                        "1-->HBM ON\n", level);
 	return ret;
 }
 
@@ -972,7 +973,10 @@ static ssize_t mdss_fb_get_srgb_mode(struct device *dev,
 
 	level = mdss_fb_send_panel_event(mfd, MDSS_EVENT_PANEL_GET_SRGB_MODE,
 			NULL);
-	ret=scnprintf(buf, PAGE_SIZE, "%d\n", level);
+	ret = scnprintf(buf, PAGE_SIZE, "mode = %d\n"
+							"0-->sRGB Mode OFF\n"
+							"1-->sRGB Mode ON\n",
+							level);
 	return ret;
 }
 
@@ -998,9 +1002,6 @@ static ssize_t mdss_fb_set_srgb_mode(struct device *dev,
 }
 
 static DEVICE_ATTR(SRGB, S_IRUGO | S_IWUSR,
-	mdss_fb_fake_get, mdss_fb_fake_set);
-
-static DEVICE_ATTR(srgb, S_IRUGO | S_IWUSR,
 	mdss_fb_get_srgb_mode, mdss_fb_set_srgb_mode);
 
 
@@ -1014,7 +1015,10 @@ static ssize_t mdss_fb_get_adobe_rgb_mode(struct device *dev,
 
 	level = mdss_fb_send_panel_event(mfd,
 		MDSS_EVENT_PANEL_GET_ADOBE_RGB_MODE, NULL);
-	ret=scnprintf(buf, PAGE_SIZE, "%d\n", level);
+	ret = scnprintf(buf, PAGE_SIZE, "mode = %d\n"
+					"0-->Adobe RGB Mode OFF\n"
+					"1-->Adobe RGB Mode ON\n",
+					level);
 	return ret;
 }
 
@@ -1040,9 +1044,6 @@ static ssize_t mdss_fb_set_adobe_rgb_mode(struct device *dev,
 }
 
 static DEVICE_ATTR(Adobe_RGB, S_IRUGO | S_IWUSR,
-	mdss_fb_fake_get, mdss_fb_fake_set);
-
-static DEVICE_ATTR(adobe_rgb, S_IRUGO | S_IWUSR,
 	mdss_fb_get_adobe_rgb_mode, mdss_fb_set_adobe_rgb_mode);
 
 static ssize_t mdss_fb_get_dci_p3_mode(struct device *dev,
@@ -1055,7 +1056,10 @@ static ssize_t mdss_fb_get_dci_p3_mode(struct device *dev,
 
 	level = mdss_fb_send_panel_event(mfd, MDSS_EVENT_PANEL_GET_DCI_P3_MODE,
 			NULL);
-	ret=scnprintf(buf, PAGE_SIZE, "%d\n", level);
+	ret = scnprintf(buf, PAGE_SIZE, "mode = %d\n"
+						"0-->DCI-P3 Mode OFF\n"
+						"1-->DCI-P3 Mode ON\n",
+						level);
 	return ret;
 }
 
@@ -1081,9 +1085,6 @@ static ssize_t mdss_fb_set_dci_p3_mode(struct device *dev,
 }
 
 static DEVICE_ATTR(DCI_P3, S_IRUGO | S_IWUSR,
-	mdss_fb_fake_get, mdss_fb_fake_set);
-
-static DEVICE_ATTR(dci_p3, S_IRUGO | S_IWUSR,
 	mdss_fb_get_dci_p3_mode, mdss_fb_set_dci_p3_mode);
 
 static ssize_t mdss_fb_get_night_mode(struct device *dev,
@@ -1096,7 +1097,10 @@ static ssize_t mdss_fb_get_night_mode(struct device *dev,
 
 	level = mdss_fb_send_panel_event(mfd, MDSS_EVENT_PANEL_GET_NIGHT_MODE,
 			NULL);
-	ret=scnprintf(buf, PAGE_SIZE, "%d\n", level);
+	ret = scnprintf(buf, PAGE_SIZE, "mode = %d\n"
+							"0-->Night Mode OFF\n"
+							"1-->Night Mode ON\n",
+							level);
 	return ret;
 }
 
@@ -1122,9 +1126,6 @@ static ssize_t mdss_fb_set_night_mode(struct device *dev,
 }
 
 static DEVICE_ATTR(night_mode, S_IRUGO | S_IWUSR,
-	mdss_fb_fake_get, mdss_fb_fake_set);
-
-static DEVICE_ATTR(night_mode_, S_IRUGO | S_IWUSR,
 	mdss_fb_get_night_mode, mdss_fb_set_night_mode);
 
 static ssize_t mdss_fb_get_oneplus_mode(struct device *dev,
@@ -1137,7 +1138,10 @@ static ssize_t mdss_fb_get_oneplus_mode(struct device *dev,
 
 	level = mdss_fb_send_panel_event(mfd, MDSS_EVENT_PANEL_GET_ONEPLUS_MODE,
 			NULL);
-	ret=scnprintf(buf, PAGE_SIZE, "%d\n", level);
+	ret = scnprintf(buf, PAGE_SIZE, "mode = %d\n"
+						"0-->Oneplus Mode OFF\n"
+						"1-->Oneplus Mode ON\n",
+						level);
 	return ret;
 }
 
@@ -1175,7 +1179,10 @@ static ssize_t mdss_fb_get_adaption_mode(struct device *dev,
 
 	level = mdss_fb_send_panel_event(mfd,
 		MDSS_EVENT_PANEL_GET_ADAPTION_MODE, NULL);
-	ret=scnprintf(buf, PAGE_SIZE, "%d\n", level);
+	ret = scnprintf(buf, PAGE_SIZE, "mode = %d\n"
+						"0-->Adaption Mode OFF\n"
+						"1-->Adaption Mode ON\n",
+						level);
 	return ret;
 }
 
@@ -1201,12 +1208,7 @@ static ssize_t mdss_fb_set_adaption_mode(struct device *dev,
 }
 
 static DEVICE_ATTR(adaption_mode, S_IRUGO | S_IWUSR,
-	mdss_fb_fake_get, mdss_fb_fake_set);
-
-static DEVICE_ATTR(adaption_mode_, S_IRUGO | S_IWUSR,
 	mdss_fb_get_adaption_mode, mdss_fb_set_adaption_mode);
-/* #endif */
-
 
 static ssize_t mdss_fb_get_persist_mode(struct device *dev,
 		struct device_attribute *attr, char *buf)
@@ -1273,15 +1275,9 @@ static struct attribute *mdss_fb_attrs[] = {
 	&dev_attr_hbm.attr,
 	&dev_attr_Adobe_RGB.attr,
 	&dev_attr_DCI_P3.attr,
-	&dev_attr_srgb.attr,
-	&dev_attr_adobe_rgb.attr,
-	&dev_attr_adaption_mode_.attr,
-	&dev_attr_dci_p3.attr,
 	&dev_attr_night_mode.attr,
-	&dev_attr_night_mode_.attr,
 	&dev_attr_adaption_mode.attr,
 	&dev_attr_oneplus_mode.attr,
-/* #endif */
 	&dev_attr_msm_fb_persist_mode.attr,
 	&dev_attr_idle_power_collapse.attr,
 	NULL,
@@ -4149,6 +4145,11 @@ static int __mdss_fb_display_thread(void *data)
 			continue;
 		}
 
+		if (ret) {
+			pr_info("%s: interrupted", __func__);
+			continue;
+		}
+
 		if (kthread_should_stop())
 			break;
 
@@ -5026,6 +5027,7 @@ static int mdss_fb_atomic_commit_ioctl(struct fb_info *info,
 	struct mdp_destination_scaler_data __user *ds_data_user;
 	struct msm_fb_data_type *mfd;
 	struct mdss_overlay_private *mdp5_data = NULL;
+	struct mdss_data_type *mdata;
 
 	ret = copy_from_user(&commit, argp, sizeof(struct mdp_layer_commit));
 	if (ret) {
@@ -5128,6 +5130,13 @@ static int mdss_fb_atomic_commit_ioctl(struct fb_info *info,
 	ds_data_user = commit.commit_v1.dest_scaler;
 	if ((ds_data_user) &&
 		(commit.commit_v1.dest_scaler_cnt)) {
+		mdata = mfd_to_mdata(mfd);
+		if (!mdata || !mdata->scaler_off ||
+				 !mdata->scaler_off->has_dest_scaler) {
+			pr_err("dest scaler not supported\n");
+			ret = -EPERM;
+			goto err;
+		}
 		ret = __mdss_fb_copy_destscaler_data(info, &commit);
 		if (ret) {
 			pr_err("copy dest scaler failed\n");
@@ -5677,3 +5686,4 @@ void mdss_fb_idle_pc(struct msm_fb_data_type *mfd)
 		sysfs_notify(&mfd->fbi->dev->kobj, NULL, "idle_power_collapse");
 	}
 }
+

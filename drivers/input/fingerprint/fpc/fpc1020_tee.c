@@ -282,37 +282,29 @@ static ssize_t irq_ack(struct device* device,
 }
 static DEVICE_ATTR(irq, S_IRUSR | S_IWUSR, irq_get, irq_ack);
 
-
 static ssize_t report_home_set(struct device *dev,
 	struct device_attribute *attr, const char *buf, size_t count)
 {
 	struct  fpc1020_data *fpc1020 = dev_get_drvdata(dev);
-    //unsigned long time;
 
 	if(ignor_home_for_ESD)
 		return -EINVAL;
-	if (!strncmp(buf, "down", strlen("down")))
-	{
-            input_report_key(fpc1020->input_dev,
-                            KEY_HOME, 1);
-            input_sync(fpc1020->input_dev);
-	}
-	else if (!strncmp(buf, "up", strlen("up")))
-	{
-            input_report_key(fpc1020->input_dev,
-                            KEY_HOME, 0);
-            input_sync(fpc1020->input_dev);
-	}
-    else if (!strncmp(buf, "timeout", strlen("timeout")))
-    {
-      input_report_key(fpc1020->input_dev,KEY_F2,1);
-      input_sync(fpc1020->input_dev);
-      input_report_key(fpc1020->input_dev,KEY_F2,0);
-      input_sync(fpc1020->input_dev);
-    }
-	else
+	if (!strncmp(buf, "down", strlen("down"))) {
+		input_report_key(fpc1020->input_dev,
+			KEY_HOME, 1);
+		input_sync(fpc1020->input_dev);
+	} else if (!strncmp(buf, "up", strlen("up"))) {
+		input_report_key(fpc1020->input_dev,
+			KEY_HOME, 0);
+		input_sync(fpc1020->input_dev);
+	} else if (!strncmp(buf, "timeout", strlen("timeout"))) {
+		input_report_key(fpc1020->input_dev, KEY_F2, 1);
+		input_sync(fpc1020->input_dev);
+		input_report_key(fpc1020->input_dev, KEY_F2, 0);
+		input_sync(fpc1020->input_dev);
+	} else {
 		return -EINVAL;
-
+	}
 	return count;
 }
 static DEVICE_ATTR(report_home, S_IWUSR, NULL, report_home_set);

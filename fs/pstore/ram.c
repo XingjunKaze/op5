@@ -518,7 +518,6 @@ void notrace ramoops_console_write_buf(const char *buf, size_t size)
 	persistent_ram_write(cxt->cprz, buf, size);
 }
 
-
 static int ramoops_parse_dt(struct platform_device *pdev,
 		struct ramoops_platform_data *pdata)
 {

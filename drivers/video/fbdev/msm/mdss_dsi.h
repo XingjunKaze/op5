@@ -1,4 +1,4 @@
-/* Copyright (c) 2012-2017, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2012-2018, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -447,7 +447,6 @@ struct mdss_dsi_ctrl_pdata {
 	struct clk *vco_dummy_clk;
 	struct clk *byte_intf_clk;
 	struct mutex panel_mode_lock;
-	//#endif
 	u8 ctrl_state;
 	int panel_mode;
 	int irq_cnt;
@@ -689,8 +688,6 @@ int mdss_dsi_px_clk_req(struct mdss_panel_data *pdata, int enable);
 int mdss_dsi_disp_vci_en(struct mdss_panel_data *pdata, int enable);
 int mdss_dsi_isp_1v1_en(struct mdss_panel_data *pdata, int enable);
 
-/* #endif */
-
 void mdss_dsi_read_hw_revision(struct mdss_dsi_ctrl_pdata *ctrl);
 int dsi_panel_device_register(struct platform_device *ctrl_pdev,
 	struct device_node *pan_node, struct mdss_dsi_ctrl_pdata *ctrl_pdata);
@@ -725,8 +722,8 @@ void disable_esd_thread(void);
 void mdss_dsi_irq_handler_config(struct mdss_dsi_ctrl_pdata *ctrl_pdata);
 
 void mdss_dsi_set_tx_power_mode(int mode, struct mdss_panel_data *pdata);
-int mdss_dsi_clk_div_config(struct mdss_panel_info *panel_info,
-			    int frame_rate);
+u64 mdss_dsi_calc_bitclk(struct mdss_panel_info *panel_info, int frame_rate);
+u32 mdss_dsi_get_pclk_rate(struct mdss_panel_info *panel_info, u64 clk_rate);
 int mdss_dsi_clk_refresh(struct mdss_panel_data *pdata, bool update_phy);
 int mdss_dsi_link_clk_init(struct platform_device *pdev,
 		      struct mdss_dsi_ctrl_pdata *ctrl_pdata);

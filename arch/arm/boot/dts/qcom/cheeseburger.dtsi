@@ -10,28 +10,27 @@
  * GNU General Public License for more details.
  */
 
-
 #include "pxlw-iris-settings.dtsi"
 
 / {
-    reserved-memory {
-        ramoops_mem: ramoops_mem@ac000000 {
-            reg = <0 0xAC000000 0 0x00200000>;
-            label = "ramoops_mem";
-        };
-        param_mem: param_mem@ac200000 {
-            reg = <0 0xAC200000 0 0x00100000>;
-            label = "param_mem";
-        };
-        mtp_mem: mtp_mem@ac400000 {
-            reg = <0 0xAC400000 0 0x00B00000>;
-            label = "mtp_mem";
-        };
-        bootloader_log_mem: bootloader_log_mem@9fff7000 {
-            reg = <0 0x9FFF7000 0 0x00100000>;
-            label = "bootloader_log_mem";
-        };
-    };
+	reserved-memory {
+		ramoops_mem: ramoops_mem@ac000000 {
+			reg = <0 0xAC000000 0 0x00200000>;
+			label = "ramoops_mem";
+		};
+		param_mem: param_mem@ac200000 {
+			reg = <0 0xAC200000 0 0x00100000>;
+			label = "param_mem";
+		};
+		mtp_mem: mtp_mem@ac400000 {
+			reg = <0 0xAC400000 0 0x00B00000>;
+			label = "mtp_mem";
+		};
+		bootloader_log_mem: bootloader_log_mem@9fff7000 {
+			reg = <0 0x9FFF7000 0 0x00100000>;
+			label = "bootloader_log_mem";
+		};
+	};
 };
 
 &pil_ipa_gpu_mem{
@@ -262,11 +261,11 @@
 			qcom,soc-low-threshold = <5>;
 		};
 	};
-    ramoops {
-        compatible = "ramoops";
-        status = "ok";
-        memory-region = <&ramoops_mem>;
-    };
+	ramoops {
+		compatible = "ramoops";
+		status = "ok";
+		memory-region = <&ramoops_mem>;
+	};
 
 	/* Add  0x9c 0x21C, 0xf0 0x23C */
 	qusb_phy0: qusb@c012000 {
@@ -290,16 +289,11 @@
 		pinctrl-0 = <&uart_console_active>;
 		pinctrl-1 = <&uart_console_deactive>;
 	};
-    bootloader_log {
-        compatible = "bootloader_log";
-        linux,contiguous-region = <&bootloader_log_mem>;
-    };
+	bootloader_log {
+		compatible = "bootloader_log";
+		linux,contiguous-region = <&bootloader_log_mem>;
+	};
 };
-
-
-
-
-
 
 &pm8998_gpios {
 	/* GPIO 5 for Vol- Key */
@@ -368,6 +362,7 @@
 		};
 	};
 
+	/*shankai@bsp, add debounce time 2017-3-18*/
 	qcom,pm8998@0{
 		qcom,power-on@800 {
 		    qcom,pon-dbc-delay = <31250>;
@@ -487,6 +482,8 @@
 };
 
 &i2c_7 {
+	qcom,clk-freq-out = <100000>;
+
 	bq27541-battery@55 {
 		status = "ok";
 		compatible = "ti,bq27541-battery";
@@ -972,14 +969,14 @@
 };
 
 &spi_1 {
-    status = "ok";
-    qcom,disable-autosuspend;
+	status = "ok";
+	qcom,disable-autosuspend;
 
-    ese@0 {
-        compatible = "nxp,p61";
-        reg = <0>;
-        spi-max-frequency = <8000000>;
-    };
+	ese@0 {
+		compatible = "nxp,p61";
+		reg = <0>;
+		spi-max-frequency = <8000000>;
+	};
 };
 
 &i2c_6 { /* BLSP1 QUP6 (NFC) */

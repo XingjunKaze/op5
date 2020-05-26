@@ -54,7 +54,6 @@ MODULE_DEVICE_TABLE(of, msm_vfe_dt_match);
 #define OVERFLOW_LENGTH 1024
 #define OVERFLOW_BUFFER_LENGTH 64
 static char stat_line[OVERFLOW_LENGTH];
-
 struct msm_isp_statistics stats;
 struct msm_isp_ub_info ub_info;
 
@@ -112,7 +111,6 @@ static int vfe_debugfs_statistics_open(struct inode *inode, struct file *file)
 	file->private_data = inode->i_private;
 	return 0;
 }
-
 static ssize_t vfe_debugfs_statistics_read(struct file *t_file, char *t_char,
 	size_t t_size_t, loff_t *t_loff_t)
 {

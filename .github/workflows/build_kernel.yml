@@ -2,7 +2,7 @@ name: Build Kernel H2OS
 on:
   push:
     branches:    
-      - makiras
+      - makiras_10
 
 jobs:
   build:
@@ -11,7 +11,7 @@ jobs:
     - name: Init Repo
       run: |
         cd ~
-        git clone https://github.com/Makiras/op5.git -b makiras --depth=1 
+        git clone https://github.com/Makiras/op5.git -b makiras_10 --depth=1 
     - name: Build With Shell
       run: |
         cd ~/op5
@@ -26,6 +26,6 @@ jobs:
     - name : Upload artifact
       uses: actions/upload-artifact@master
       with:
-        name: blu_spark_makiras_modified.zip
+        name: blu_spark_makiras_10
         path: /home/runner/AnyKernel/
 

@@ -3548,8 +3548,8 @@ out:
 	return rc;
 }
 
-/* Add dash charging */
 #define DEFALUT_BATT_TEMP	250
+
 static int fg_esr_validate(struct fg_chip *chip)
 {
 	int rc, esr_uohms;
@@ -3761,7 +3761,6 @@ static int fg_psy_get_property(struct power_supply *psy,
 
 	switch (psp) {
 	case POWER_SUPPLY_PROP_CAPACITY:
-/* Add dash charging */
 		if (!get_extern_fg_regist_done())
 			pval->intval = get_prop_pre_shutdown_soc();
 		else if (chip->use_external_fg && external_fg
@@ -3947,7 +3946,6 @@ static int fg_psy_set_property(struct power_supply *psy,
 	int rc = 0;
 
 	switch (psp) {
-
 	case POWER_SUPPLY_PROP_CC_TO_CV_POINT:
 		oem_update_cc_cv_setpoint(chip, pval->intval);
 		break;

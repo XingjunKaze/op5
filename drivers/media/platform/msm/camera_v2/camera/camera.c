@@ -1,4 +1,4 @@
-/* Copyright (c) 2012-2017, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2012-2019, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -579,7 +579,6 @@ static int camera_v4l2_fh_release(struct file *filep)
 		mutex_destroy(&sp->lock);
 		kzfree(sp);
 	}
-
 	return 0;
 }
 
